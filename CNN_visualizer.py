@@ -15,7 +15,7 @@ import theano as T
 from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D
 from keras import backend as K
-
+import numpy as np
 
 
 
@@ -91,19 +91,22 @@ def usage():
 
 if __name__ == '__main__':
 
-	if len(sys.argv) < 3:
+	if len(sys.argv) < 2:
 		usage()
 		sys.exit(-1)	
 	a = LayerVisualizer(sys.argv[1])
-	img = cv2.imread(sys.argv[2],0)
+	#img = cv2.imread(sys.argv[2],0)
 	filters = a.get_filters(1)
 	#do the image processing part here.
 	#TODO: Add baseImageProc support
-	img1 = (img - img.mean())/img.std()
-	output_imgs = a.visualize(img1)
-	output_imgs = [ cv2.convertScaleAbs((i - i.min())/i.ptp(),0,255) for i in output_imgs]
+#	img1 = (img - img.mean())/img.std()
+#	output_imgs = a.visualize(img1)
+#	output_imgs = [ cv2.convertScaleAbs((i - i.min())/i.ptp(),0,255) for i in output_imgs]
 	cnt = 0
-	for i in output_imgs:
-		cv2.imwrite(str(cnt)+'.jpg',i)
-		cnt+=1
+	for i in filters:
+                m = cv2.resize(i, (i.shape[0]*11, i.shape[1]*11))
+                m = np.uint8(255*(m-m.min() / m.ptp()))
+		#plt.imsave(str(cnt)+'.jpg', m, cmap='jet')
+                cv2.imwrite(str(cnt)+'.jpg',m)
+                cnt+=1
 	
