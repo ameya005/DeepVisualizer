@@ -95,6 +95,7 @@ if __name__ == '__main__':
 		usage()
 		sys.exit(-1)	
 	a = LayerVisualizer(sys.argv[1])
+        out_img_name = sys.argv[2]
 	#img = cv2.imread(sys.argv[2],0)
 	filters = a.get_filters(1)
 	#do the image processing part here.
@@ -103,10 +104,38 @@ if __name__ == '__main__':
 #	output_imgs = a.visualize(img1)
 #	output_imgs = [ cv2.convertScaleAbs((i - i.min())/i.ptp(),0,255) for i in output_imgs]
 	cnt = 0
-	for i in filters:
-                m = cv2.resize(i, (i.shape[0]*11, i.shape[1]*11))
-                m = np.uint8(255*(m-m.min() / m.ptp()))
-		#plt.imsave(str(cnt)+'.jpg', m, cmap='jet')
-                cv2.imwrite(str(cnt)+'.jpg',m)
-                cnt+=1
+	#for i in filters:
+        #        m = cv2.resize(i, (i.shape[0]*11, i.shape[1]*11))
+        #        m = np.uint8(255*(m-m.min() / m.ptp()))
+	#	#plt.imsave(str(cnt)+'.jpg', m, cmap='jet')
+        #        cv2.imwrite(str(cnt)+'.jpg',m)
+        #        cnt+=1
+        num_imgs = len(filters)
+	side = int(np.sqrt(num_imgs))+1
+        print(num_imgs)
+        imgs = [cv2.resize(i,(i.shape[0]*10,i.shape[1]*10)) for i in filters]
+        imgs = [np.uint8(255*(i-i.min() / i.ptp())) for i in imgs]
+        #full_img = np.zeros((side*imgs[0].shape[0],side*imgs[0].shape[1]))
+        if len(imgs[0].shape) < 3:
+            pad_shape = ((5,5),(5,5))
+            one_mat = np.zeros((imgs[0].shape[0]+10,imgs[0].shape[1]+10))
+        else:
+            pad_shape = ((5,5),(5,5),(0,0))
+            one_mat = np.zeros((imgs[0].shape[0]+10,imgs[0].shape[1]+10,3))
+        rows = []
+        for i in xrange(side):
+            cols = []
+            for j in xrange(side):
+                if i*side + j < num_imgs:
+                    cols.append(np.pad(imgs[i*side+j],pad_shape,mode='constant'))
+                    print cols[-1].shape
+                else:
+                    cols.append(one_mat)
+            print len(cols)
+            rows.append(np.hstack(cols))
+               
+        out_img = np.vstack(rows)
+                  
+        cv2.imwrite(out_img_name,out_img)
+
 	
